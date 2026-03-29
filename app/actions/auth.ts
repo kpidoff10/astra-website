@@ -84,8 +84,8 @@ export async function registerUser(formData: {
       
       console.log('[SA] ⏳ Calling resend.emails.send()...');
       const { data, error } = await resend.emails.send({
-        from: 'Astra <astra@astra-ia.dev>',
-        to: user.email,
+        from: 'Astra <astra@astra-ia.dev>' as string,
+        to: user.email as string,
         subject: 'Bienvenue sur Astra ✨',
         html: html,
       });
