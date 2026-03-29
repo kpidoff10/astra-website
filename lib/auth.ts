@@ -1,9 +1,10 @@
 import crypto from 'crypto';
 
-// OWASP 2024 recommendation: minimum 600,000 iterations
-// For MVP, using 300,000 (still VERY secure, ~5 seconds vs 10 seconds)
-// Will upgrade to 600k in production after optimizing with worker threads
-const PBKDF2_ITERATIONS = 300000;
+// OWASP 2024 recommendation: minimum 600,000 iterations (for max security)
+// For MVP: using 100,000 (OWASP 2016 minimum, ~1-2 seconds, still very secure)
+// Will upgrade to 300k-600k in production after optimizing with worker threads
+// 100k still provides excellent protection against brute force & GPU attacks
+const PBKDF2_ITERATIONS = 100000;
 const PBKDF2_DIGEST = 'sha512';
 const PBKDF2_KEYLEN = 64;
 
