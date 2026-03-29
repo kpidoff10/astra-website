@@ -1,8 +1,5 @@
 {
   "buildCommand": "prisma generate && prisma migrate deploy && next build",
-  "env": {
-    "RESEND_API_KEY": "@resend_api_key"
-  },
   "functions": {
     "api/emails/send": {
       "maxDuration": 60
