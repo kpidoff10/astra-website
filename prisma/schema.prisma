@@ -19,7 +19,9 @@ model User {
   email         String    @unique
   name          String?
   image         String?
+  password      String?   // for credential auth
   emailVerified DateTime?
+  role          UserRole  @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -31,6 +33,12 @@ model User {
 
   @@index([email])
   @@index([createdAt])
+}
+
+enum UserRole {
+  USER
+  AI_AGENT
+  ADMIN
 }
 
 model Account {
