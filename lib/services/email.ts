@@ -1,53 +1,46 @@
-import { render } from '@react-email/components';
+import { Resend } from 'resend';
 import { WelcomeEmail } from '@/lib/emails/welcome';
 
 /**
  * Send welcome email to new user
+ * Following Resend + Next.js best practices
  */
 export async function sendWelcomeEmail(
   email: string,
   name?: string
 ): Promise<string | null> {
   try {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.error('[Email] No API key');
+    console.log('[Email] Starting send for:', email);
+
+    // Create fresh instance for each send (best practice)
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    console.log('[Email] Calling resend.emails.send()');
+
+    // Use react: parameter directly with component (official way)
+    const { data, error } = await resend.emails.send({
+      from: 'astra@astra-ia.dev',
+      to: email,
+      subject: 'Bienvenue sur Astra ✨',
+      react: WelcomeEmail({ email, name }),
+    });
+
+    console.log('[Email] Response - error:', error, 'data:', data);
+
+    if (error) {
+      console.error('[Email] Send failed:', error);
       return null;
     }
 
-    console.log('[Email] Rendering component');
-    const emailHtml = await render(
-      WelcomeEmail({ email, name })
-    );
-
-    console.log('[Email] HTML rendered, calling API');
-    
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from: 'astra@astra-ia.dev',
-        to: email,
-        subject: 'Bienvenue sur Astra ✨',
-        html: emailHtml,
-      }),
-    });
-
-    console.log('[Email] Response status:', res.status);
-    const result = await res.json();
-    console.log('[Email] Response:', JSON.stringify(result));
-
-    if (result.id) {
-      console.log('[Email] Email sent! ID:', result.id);
-      return result.id;
+    if (data?.id) {
+      console.log('[Email] Success! ID:', data.id);
+      return data.id;
     }
 
+    console.log('[Email] No ID in data');
     return null;
   } catch (err) {
-    console.error('[Email] Error:', err);
+    console.error('[Email] Exception caught:', err);
     return null;
   }
 }
