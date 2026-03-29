@@ -81,7 +81,7 @@ export async function registerUser(formData: {
       const resend = new Resend(apiKey);
       
       console.log('[SA] ⏳ Generating email HTML...');
-      const html = generateWelcomeEmail(user.email, user.name);
+      const html = generateWelcomeEmail(user.email, user.name || undefined);
       
       console.log('[SA] ⏳ Calling resend.emails.send()...');
       const { data, error } = await resend.emails.send({
