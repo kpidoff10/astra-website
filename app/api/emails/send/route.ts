@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { WelcomeEmail } from '@/lib/emails/welcome';
+import { generateWelcomeEmailHTML } from '@/lib/emails/welcome-html';
 
 // Allow longer execution time for email sending
 export const maxDuration = 60;
@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Email sending endpoint with 60s timeout
- * Uses Resend SDK directly with React component
+ * Uses Resend SDK with plain HTML (no React Email render issues)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -23,17 +23,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[EmailAPI] Step 1: Creating request for:', email);
+    console.log('[EmailAPI] Sending email to:', email);
 
-    // Use Resend SDK with React component directly (no manual render)
+    // Generate HTML email
+    const html = generateWelcomeEmailHTML(email, name);
+
+    // Use Resend SDK with plain HTML (no render() issues)
     const { data, error } = await resend.emails.send({
       from: 'astra@astra-ia.dev',
       to: email,
       subject: 'Bienvenue sur Astra ✨',
-      react: WelcomeEmail({ email, name }),
+      html: html,
     });
 
-    console.log('[EmailAPI] Step 2: Resend response - error:', error, 'id:', data?.id);
+    console.log('[EmailAPI] Response received - error:', error, 'id:', data?.id);
 
     if (error) {
       console.error('[EmailAPI] Resend error:', error);
