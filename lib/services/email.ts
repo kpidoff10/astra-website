@@ -1,52 +1,56 @@
 import { render } from '@react-email/components';
-import { Resend } from 'resend';
 import { WelcomeEmail } from '@/lib/emails/welcome';
 
 /**
- * Send welcome email to new user
+ * Send welcome email to new user using Resend API
  */
 export async function sendWelcomeEmail(
   email: string,
   name?: string
 ): Promise<string | null> {
   try {
-    // Debug: check if API key is loaded
+    // Check API key
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      console.error('RESEND_API_KEY not found in environment variables');
+      console.error('[Email] RESEND_API_KEY not found');
       return null;
     }
 
-    console.log('[Email] Initializing Resend with API key');
-    const resend = new Resend(apiKey);
-
-    console.log('[Email] Rendering email template for:', email);
+    console.log('[Email] Rendering template for:', email);
     const html = await render(WelcomeEmail({ email, name }));
 
-    console.log('[Email] Sending email via Resend');
-    const response = await resend.emails.send({
-      from: 'Astra <astra@astra-ia.dev>',
-      to: email,
-      subject: 'Bienvenue sur Astra ✨',
-      html,
+    console.log('[Email] Calling Resend API');
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'astra@astra-ia.dev',
+        to: email,
+        subject: 'Bienvenue sur Astra ✨',
+        html,
+      }),
     });
 
-    console.log('[Email] Response received:', JSON.stringify(response));
+    const data = await response.json();
+    console.log('[Email] Response status:', response.status, 'Data:', JSON.stringify(data));
 
-    if (response.error) {
-      console.error('[Email] Send error:', response.error);
+    if (!response.ok) {
+      console.error('[Email] API error:', data);
       return null;
     }
 
-    if (!response.data?.id) {
-      console.error('[Email] No email ID in response:', response);
-      return null;
+    if (data.id) {
+      console.log('[Email] Success! Sent to:', email, 'ID:', data.id);
+      return data.id;
     }
 
-    console.log('[Email] Success! Email sent to:', email, 'ID:', response.data?.id);
-    return response.data?.id || null;
+    console.error('[Email] No ID in response:', data);
+    return null;
   } catch (error) {
-    console.error('[Email] Failed to send welcome email:', error);
+    console.error('[Email] Exception:', error);
     return null;
   }
 }
