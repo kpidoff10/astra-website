@@ -17,6 +17,12 @@
     @apply bg-white text-slate-900 transition-colors;
   }
 
+  /* Dark mode support via class attribute (next-themes) */
+  html.dark body {
+    @apply bg-slate-950 text-slate-50;
+  }
+
+  /* Fallback for system preference if theme provider not ready */
   @media (prefers-color-scheme: dark) {
     body {
       @apply bg-slate-950 text-slate-50;
