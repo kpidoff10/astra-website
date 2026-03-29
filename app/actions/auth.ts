@@ -71,16 +71,18 @@ export async function registerUser(formData: {
       'User registered via Server Action'
     );
 
-    // Send email via internal API route (awaited properly)
-    console.log('[SA] Sending welcome email via API route');
-    try {
-      const emailResult = await sendWelcomeEmailViaAPI(user.email, user.name || undefined);
-      if (!emailResult.success) {
-        console.warn('[SA] Welcome email failed:', emailResult.error);
-      }
-    } catch (emailErr) {
-      console.error('[SA] Welcome email exception:', emailErr);
-    }
+    // Send email via API route (simple approach that works)
+    console.log('[SA] Queueing email to /api/send-email');
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
+    
+    // Fire and forget - don't block registration
+    fetch(`${baseUrl}/api/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, name: user.name }),
+    }).catch(err => console.error('[SA] Email send error:', err));
 
     return {
       success: true,
@@ -95,61 +97,6 @@ export async function registerUser(formData: {
     console.error('[SA] Registration error:', error);
     return {
       error: error instanceof Error ? error.message : 'Registration failed',
-    };
-  }
-}
-
-/**
- * Helper: Call the internal API route to send email
- * This is SYNCHRONOUS and reliable on Vercel
- */
-async function sendWelcomeEmailViaAPI(email: string, name?: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    console.log('[EmailViaAPI] Calling /api/emails/send for:', email);
-    
-    // Build absolute URL for API call (required in Server Actions)
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-    
-    const response = await fetch(`${baseUrl}/api/emails/send`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        name: name || undefined,
-        type: 'welcome',
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('[EmailViaAPI] HTTP error:', response.status);
-      const errData = await response.text();
-      return { 
-        success: false, 
-        error: `HTTP ${response.status}: ${errData}` 
-      };
-    }
-
-    const data = await response.json();
-    
-    if (data?.success) {
-      console.log('[EmailViaAPI] ✅ Email sent! ID:', data.emailId);
-      return { success: true };
-    }
-
-    console.error('[EmailViaAPI] ❌ API returned error:', data?.error);
-    return { 
-      success: false, 
-      error: data?.error || 'Unknown API error' 
-    };
-  } catch (err) {
-    console.error('[EmailViaAPI] Exception:', err);
-    return { 
-      success: false, 
-      error: err instanceof Error ? err.message : 'Unknown error' 
     };
   }
 }
