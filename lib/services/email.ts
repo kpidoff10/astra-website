@@ -1,53 +1,40 @@
-import { render } from '@react-email/components';
+'use server';
+
+import { Resend } from 'resend';
 import { WelcomeEmail } from '@/lib/emails/welcome';
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 /**
- * Send welcome email to new user using Resend API
+ * Send welcome email to new user
+ * This is a server-side function using the Resend SDK
  */
 export async function sendWelcomeEmail(
   email: string,
   name?: string
 ): Promise<string | null> {
   try {
-    // Check API key
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.error('[Email] RESEND_API_KEY not found');
-      return null;
-    }
+    console.log('[Email] Sending to:', email);
 
-    console.log('[Email] Rendering template for:', email);
-    const html = await render(WelcomeEmail({ email, name }));
-
-    console.log('[Email] Calling Resend API');
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'astra@astra-ia.dev',
-        to: email,
-        subject: 'Bienvenue sur Astra ✨',
-        html,
-      }),
+    // Use Resend with React component (not HTML render)
+    const { data, error } = await resend.emails.send({
+      from: 'astra@astra-ia.dev',
+      to: email,
+      subject: 'Bienvenue sur Astra ✨',
+      react: WelcomeEmail({ email, name }),
     });
 
-    const data = await response.json();
-    console.log('[Email] Response status:', response.status, 'Data:', JSON.stringify(data));
-
-    if (!response.ok) {
-      console.error('[Email] API error:', data);
+    if (error) {
+      console.error('[Email] Resend error:', error);
       return null;
     }
 
-    if (data.id) {
-      console.log('[Email] Success! Sent to:', email, 'ID:', data.id);
+    if (data?.id) {
+      console.log('[Email] Success! ID:', data.id);
       return data.id;
     }
 
-    console.error('[Email] No ID in response:', data);
+    console.log('[Email] No ID returned, data:', data);
     return null;
   } catch (error) {
     console.error('[Email] Exception:', error);
