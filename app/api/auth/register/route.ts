@@ -49,11 +49,12 @@ export async function POST(request: NextRequest) {
 
     // Check for PII in name (optional field)
     if (name) {
+      const ip = request.headers.get('x-forwarded-for') || 'unknown';
       const validation = await validateInput(
         name,
         '/api/auth/register',
         undefined,
-        request.ip
+        ip
       );
 
       if (!validation.isValid) {
