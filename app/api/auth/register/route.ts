@@ -12,8 +12,18 @@ import {
 } from '@/lib/utils/pii-validator';
 import { logger } from '@/lib/utils/logger';
 import { USER_ROLES, AUTH_ERRORS, VALIDATION } from '@/lib/constants';
+import { createAuthRateLimiter } from '@/lib/middleware/rate-limit';
+
+// Initialize rate limiter
+const authLimiter = createAuthRateLimiter();
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await authLimiter(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = await request.json();
     const { email, password, name, userType } = body;
