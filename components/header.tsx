@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { ThemeToggle } from './theme-toggle';
+import { LanguageSwitcher } from './language-switcher';
 
 export function Header() {
   return (
@@ -19,7 +21,9 @@ export function Header() {
           </a>
         </nav>
 
-        <div className="flex gap-4">
+        <div className="flex gap-3 items-center">
+          <ThemeToggle />
+          <LanguageSwitcher />
           <Link
             href="/login"
             className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors font-semibold"
