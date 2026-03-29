@@ -13,6 +13,7 @@ import {
 import { logger } from '@/lib/utils/logger';
 import { USER_ROLES, AUTH_ERRORS, VALIDATION } from '@/lib/constants';
 import { createAuthRateLimiter } from '@/lib/middleware/rate-limit';
+import { sendWelcomeEmail } from '@/lib/services/email';
 
 // Initialize rate limiter
 const authLimiter = createAuthRateLimiter();
@@ -96,6 +97,14 @@ export async function POST(request: NextRequest) {
       { userId: user.id, email: user.email, role },
       'User registered'
     );
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(user.email, user.name || undefined).catch((err) => {
+      logger.error(
+        { userId: user.id, email: user.email, error: err },
+        'Failed to send welcome email'
+      );
+    });
 
     // Log activity if this is an AI agent registration
     if (role === USER_ROLES.AI_AGENT) {
