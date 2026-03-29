@@ -71,18 +71,32 @@ export async function registerUser(formData: {
       'User registered via Server Action'
     );
 
-    // Send email via API route (simple approach that works)
-    console.log('[SA] Queueing email to /api/send-email');
+    // Send email via API route (AWAIT to see what happens)
+    console.log('[SA] 🔵 CALLING /api/send-email for:', user.email);
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000';
     
-    // Fire and forget - don't block registration
-    fetch(`${baseUrl}/api/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email, name: user.name }),
-    }).catch(err => console.error('[SA] Email send error:', err));
+    try {
+      console.log('[SA] ⏳ Fetching:', `${baseUrl}/api/send-email`);
+      const emailRes = await fetch(`${baseUrl}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, name: user.name }),
+      });
+      
+      console.log('[SA] 📨 Got response:', emailRes.status);
+      const emailData = await emailRes.json();
+      console.log('[SA] 📋 Response data:', emailData);
+      
+      if (emailRes.ok) {
+        console.log('[SA] ✅ EMAIL REQUEST SUCCESSFUL! ID:', emailData.id);
+      } else {
+        console.error('[SA] ❌ EMAIL REQUEST FAILED! Status:', emailRes.status);
+      }
+    } catch (emailErr) {
+      console.error('[SA] ❌ EMAIL FETCH EXCEPTION:', emailErr);
+    }
 
     return {
       success: true,
