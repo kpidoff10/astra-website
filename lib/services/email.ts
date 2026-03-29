@@ -1,67 +1,56 @@
-import { Resend } from 'resend';
+import { render } from '@react-email/components';
 import { WelcomeEmail } from '@/lib/emails/welcome';
 
 /**
  * Send welcome email to new user
- * Following Resend + Next.js best practices
+ * Uses fetch + render (no SDK issues)
  */
 export async function sendWelcomeEmail(
   email: string,
   name?: string
 ): Promise<string | null> {
   try {
-    console.log('[Email] START - for:', email);
+    console.log('[Email] START - email:', email);
 
     // Validate API key
-    if (!process.env.RESEND_API_KEY) {
-      console.error('[Email] RESEND_API_KEY not set!');
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error('[Email] NO API KEY');
       return null;
     }
 
-    console.log('[Email] Creating Resend instance');
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('[Email] Step 1: Rendering component');
+    const html = await render(WelcomeEmail({ email, name }));
+    console.log('[Email] Step 2: HTML rendered, length:', html.length);
 
-    console.log('[Email] Preparing to send');
-
-    // Create promise with timeout
-    const emailPromise = resend.emails.send({
-      from: 'astra@astra-ia.dev',
-      to: email,
-      subject: 'Bienvenue sur Astra ✨',
-      react: WelcomeEmail({ email, name }),
+    console.log('[Email] Step 3: Calling Resend API');
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'astra@astra-ia.dev',
+        to: email,
+        subject: 'Bienvenue sur Astra ✨',
+        html: html,
+      }),
     });
 
-    console.log('[Email] Awaiting response');
+    console.log('[Email] Step 4: Response status:', response.status);
+    const result = await response.json();
+    console.log('[Email] Step 5: Response data:', JSON.stringify(result));
 
-    // Add timeout (5 seconds)
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(
-        () => reject(new Error('[Email] Request timeout (5s)')),
-        5000
-      )
-    );
-
-    const { data, error } = await Promise.race([
-      emailPromise,
-      timeoutPromise as Promise<any>,
-    ]);
-
-    console.log('[Email] Response received - error:', error, 'id:', data?.id);
-
-    if (error) {
-      console.error('[Email] Resend error:', error);
-      return null;
+    if (result.id) {
+      console.log('[Email] SUCCESS! Email ID:', result.id);
+      return result.id;
     }
 
-    if (data?.id) {
-      console.log('[Email] SUCCESS! ID:', data.id);
-      return data.id;
-    }
-
-    console.log('[Email] NO ID in response');
+    console.log('[Email] FAIL: No ID in response');
     return null;
   } catch (err) {
-    console.error('[Email] EXCEPTION:', String(err));
+    console.error('[Email] EXCEPTION:', err instanceof Error ? err.message : String(err));
     return null;
   }
 }
