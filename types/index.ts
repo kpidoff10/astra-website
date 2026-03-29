@@ -1,5 +1,4 @@
-import { User, Subscription, Plan } from '@prisma/client';
-import type { AIAgent } from '@prisma/client';
+import type { User, AIAgent, Subscription, Plan } from '@prisma/client';
 
 export type UserWithSubscription = User & {
   subscription: Subscription | null;
