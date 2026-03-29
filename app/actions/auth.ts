@@ -71,11 +71,16 @@ export async function registerUser(formData: {
       'User registered via Server Action'
     );
 
-    // Send email via Server Action (no external call needed)
-    console.log('[SA] Queueing welcome email');
-    sendWelcomeEmailAction(user.email, user.name || undefined).catch((err) => {
-      console.error('[SA] Welcome email failed:', err);
-    });
+    // Send email via internal API route (awaited properly)
+    console.log('[SA] Sending welcome email via API route');
+    try {
+      const emailResult = await sendWelcomeEmailViaAPI(user.email, user.name || undefined);
+      if (!emailResult.success) {
+        console.warn('[SA] Welcome email failed:', emailResult.error);
+      }
+    } catch (emailErr) {
+      console.error('[SA] Welcome email exception:', emailErr);
+    }
 
     return {
       success: true,
@@ -95,51 +100,56 @@ export async function registerUser(formData: {
 }
 
 /**
- * Protected Server Action to send welcome email
- * Uses raw fetch to Resend API (no SDK dependencies)
+ * Helper: Call the internal API route to send email
+ * This is SYNCHRONOUS and reliable on Vercel
  */
-async function sendWelcomeEmailAction(email: string, name?: string): Promise<string | null> {
+async function sendWelcomeEmailViaAPI(email: string, name?: string): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log('[EmailAction] Sending welcome email to:', email);
-
-    // Import email template
-    const { generateWelcomeEmail } = await import('@/lib/emails/templates');
-    const html = generateWelcomeEmail(email, name);
-
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.error('[EmailAction] NO RESEND_API_KEY');
-      return null;
-    }
-
-    console.log('[EmailAction] Calling Resend API with fetch');
-    const response = await fetch('https://api.resend.com/emails', {
+    console.log('[EmailViaAPI] Calling /api/emails/send for:', email);
+    
+    // Build absolute URL for API call (required in Server Actions)
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}/api/emails/send`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Astra <astra@astra-ia.dev>',
-        to: email,
-        subject: 'Bienvenue sur Astra ✨',
-        html: html,
+        email,
+        name: name || undefined,
+        type: 'welcome',
       }),
     });
 
-    console.log('[EmailAction] Response status:', response.status);
-    const data = await response.json();
-    console.log('[EmailAction] Response data:', JSON.stringify(data));
-
-    if (data?.id) {
-      console.log('[EmailAction] ✅ SUCCESS! Email ID:', data.id);
-      return data.id;
+    if (!response.ok) {
+      console.error('[EmailViaAPI] HTTP error:', response.status);
+      const errData = await response.text();
+      return { 
+        success: false, 
+        error: `HTTP ${response.status}: ${errData}` 
+      };
     }
 
-    console.error('[EmailAction] ❌ Failed. Response:', data);
-    return null;
+    const data = await response.json();
+    
+    if (data?.success) {
+      console.log('[EmailViaAPI] ✅ Email sent! ID:', data.emailId);
+      return { success: true };
+    }
+
+    console.error('[EmailViaAPI] ❌ API returned error:', data?.error);
+    return { 
+      success: false, 
+      error: data?.error || 'Unknown API error' 
+    };
   } catch (err) {
-    console.error('[EmailAction] Exception:', err);
-    return null;
+    console.error('[EmailViaAPI] Exception:', err);
+    return { 
+      success: false, 
+      error: err instanceof Error ? err.message : 'Unknown error' 
+    };
   }
 }
