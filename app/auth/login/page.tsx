@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { PasswordInput } from '@/components/password-input';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,6 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -90,28 +90,17 @@ function LoginForm() {
                 placeholder="Email"
               />
             </div>
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Mot de passe
-              </label>
-              <input
+            <div className="rounded-b-md">
+              <PasswordInput
                 id="password"
                 name="password"
-                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={setPassword}
+                placeholder="Mot de passe"
                 autoComplete="current-password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm dark:bg-gray-800"
-                placeholder="Mot de passe"
+                className="rounded-none rounded-b-md"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
             </div>
           </div>
 
