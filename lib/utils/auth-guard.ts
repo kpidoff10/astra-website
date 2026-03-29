@@ -31,7 +31,7 @@ export async function requireRole(
 ) {
   const session = await requireAuth();
 
-  if ((session.user as any).role !== role) {
+  if ((session.user as Record<string, unknown>).role !== role) {
     throw new Error('FORBIDDEN');
   }
 
@@ -60,7 +60,7 @@ export async function hasRole(
   role: (typeof USER_ROLES)[keyof typeof USER_ROLES]
 ): Promise<boolean> {
   const session = await getCurrentSession();
-  return (session?.user as any)?.role === role;
+  return (session?.user as Record<string, unknown>)?.role === role;
 }
 
 /**
@@ -75,5 +75,5 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function getCurrentUserId(): Promise<string | null> {
   const session = await getCurrentSession();
-  return (session?.user as any)?.id || null;
+  return (session?.user as Record<string, unknown>)?.id || null;
 }

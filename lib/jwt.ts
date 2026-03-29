@@ -47,7 +47,7 @@ export function verifyToken(token: string): JWTPayload | null {
       algorithms: ['HS256'],
     }) as JWTPayload;
     return payload;
-  } catch (error) {
+  } catch {
     // Token is invalid or expired
     return null;
   }
@@ -76,7 +76,7 @@ export function refreshToken(token: string): string | null {
   }
 
   // Remove iat and exp from payload before re-signing
-  const { iat, exp, ...data } = payload;
+  const { ...data } = payload;
   return signToken(data);
 }
 

@@ -115,7 +115,7 @@ export function generateWelcomeEmail(email: string, name?: string): string {
       )}
       
       <p class="signature">
-        — L\'équipe Astra 🚀
+        — L'équipe Astra 🚀
       </p>
     </div>
     

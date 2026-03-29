@@ -38,7 +38,7 @@ function LoginForm() {
         toast.success('Connecté avec succès!');
         router.push(callbackUrl);
       }
-    } catch (err) {
+    } catch {
       setError('Une erreur est survenue');
       toast.error('Erreur lors de la connexion');
     } finally {

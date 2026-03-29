@@ -76,7 +76,7 @@ function RegisterForm() {
         toast.success('Compte créé! Veuillez vérifier votre email.');
         router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
       }
-    } catch (err) {
+    } catch {
       setError('Une erreur est survenue');
       toast.error('Une erreur est survenue');
     } finally {

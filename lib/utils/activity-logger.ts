@@ -13,7 +13,7 @@ export interface ActivityLogEntry {
  */
 export async function logActivity(entry: ActivityLogEntry): Promise<void> {
   try {
-    const data: any = {
+    const data: Record<string, unknown> = {
       agentId: entry.agentId,
       action: entry.action,
       ipAddress: entry.ipAddress,

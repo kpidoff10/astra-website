@@ -44,7 +44,7 @@ export async function verifyPassword(
 
     // Use timing-safe comparison to prevent timing attacks
     return crypto.timingSafeEqual(Buffer.from(computedHash), Buffer.from(hash));
-  } catch (error) {
+  } catch {
     // Any error during verification = invalid hash
     return false;
   }

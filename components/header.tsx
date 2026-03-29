@@ -13,7 +13,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const user = session?.user;
-  const role = (user as any)?.role;
+  const role = (user as Record<string, unknown>)?.role;
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });

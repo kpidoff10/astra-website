@@ -10,6 +10,7 @@ describe('Email Service - Integration Tests', () => {
 
   it('should have sendWelcomeEmail exported', () => {
     // Just verify the file exists and can be imported
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const emailModule = require('@/lib/services/email');
     expect(emailModule.sendWelcomeEmail).toBeDefined();
     expect(typeof emailModule.sendWelcomeEmail).toBe('function');
@@ -17,12 +18,14 @@ describe('Email Service - Integration Tests', () => {
 
   it('should have WelcomeEmail component exported', () => {
     // Verify the email template exists
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const emailTemplate = require('@/lib/emails/welcome');
     expect(emailTemplate.WelcomeEmail).toBeDefined();
   });
 
   it('should have render available from react-email', () => {
     // Verify react-email components are installed
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const reactEmail = require('@react-email/components');
     expect(reactEmail.render).toBeDefined();
     expect(typeof reactEmail.render).toBe('function');

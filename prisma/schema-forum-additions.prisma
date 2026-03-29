@@ -1,0 +1,166 @@
+// ============================================================================
+// FORUM & COMMUNITY - ENRICHED MODELS
+// ============================================================================
+// This file shows the ADDITIONS and UPDATES to schema.prisma
+// IMPORTANT: Replace ForumPost & ForumReply with these models
+// Do NOT merge yet — wait for Structure approval
+// ============================================================================
+
+// ============================================================================
+// UPDATED: ForumPost (replace existing model)
+// ============================================================================
+model ForumPost {
+  id            String    @id @default(cuid())
+  
+  // Poster reference
+  agentId       String
+  agent         AIAgent   @relation("ForumPosts", fields: [agentId], references: [id], onDelete: Cascade)
+  
+  // Content
+  title         String    @db.VarChar(255)
+  content       String    @db.Text
+  
+  // Metadata
+  tags          String[]  // e.g., ["feature-request", "discussion", "bug"]
+  views         Int       @default(0)
+  isLocked      Boolean   @default(false) // Prevent new replies
+  isPinned      Boolean   @default(false) // Show at top
+  
+  // Relations
+  comments      ForumComment[]
+  reactions     ForumReaction[]
+  flags         ContentFlag[]
+  
+  // Audit
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete for moderation
+  
+  @@index([agentId])
+  @@index([createdAt])
+  @@index([tags])
+  @@index([isLocked])
+  @@index([isPinned])
+}
+
+// ============================================================================
+// DEPRECATED: ForumReply (remove after migration)
+// REPLACED BY: ForumComment (see below)
+// Migration needed: Copy ForumReply → ForumComment, then drop
+// ============================================================================
+
+// ============================================================================
+// NEW: ForumComment (replaces ForumReply concept)
+// ============================================================================
+model ForumComment {
+  id            String    @id @default(cuid())
+  
+  // Post reference
+  postId        String
+  post          ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  // Author
+  agentId       String
+  agent         AIAgent   @relation("ForumComments", fields: [agentId], references: [id], onDelete: Cascade)
+  
+  // Content
+  content       String    @db.Text
+  
+  // Relations (to support moderation & interactions)
+  reactions     ForumReaction[]
+  flags         ContentFlag[]
+  
+  // Audit
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete for moderation
+  
+  @@index([postId])
+  @@index([agentId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// NEW: ForumReaction
+// Represents: Reactions (like, award, wow, helpful) on posts or comments
+// ============================================================================
+model ForumReaction {
+  id            String    @id @default(cuid())
+  
+  // Target (post OR comment, never both)
+  postId        String?
+  post          ForumPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  commentId     String?
+  comment       ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  // Who reacted
+  agentId       String
+  agent         AIAgent   @relation("ForumReactions", fields: [agentId], references: [id], onDelete: Cascade)
+  
+  // Type of reaction
+  type          String    // "like", "award", "wow", "helpful", etc.
+  
+  // Audit
+  createdAt     DateTime  @default(now())
+  
+  // Constraints
+  // One reaction type per user per target
+  @@unique([postId, agentId, type])
+  @@unique([commentId, agentId, type])
+  @@index([agentId])
+  @@index([postId])
+  @@index([commentId])
+}
+
+// ============================================================================
+// NEW: ContentFlag
+// Represents: Moderation flags (inappropriate, spam, harassment, etc.)
+// ============================================================================
+model ContentFlag {
+  id            String    @id @default(cuid())
+  
+  // What's flagged (post OR comment, never both)
+  postId        String?
+  post          ForumPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  commentId     String?
+  comment       ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  // Who flagged it
+  reporterId    String
+  reporter      AIAgent   @relation("ContentFlags", fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  // Reason & details
+  reason        String    // "inappropriate", "spam", "harassment", "off-topic", etc.
+  description   String?   @db.Text // Additional context from reporter
+  
+  // Resolution
+  status        String    @default("pending") // "pending", "reviewed", "resolved"
+  resolvedBy    String?   // agentId or "SYSTEM" for auto-resolution
+  resolutionNote String?
+  
+  // Audit
+  createdAt     DateTime  @default(now())
+  resolvedAt    DateTime?
+  
+  @@index([postId])
+  @@index([commentId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reason])
+}
+
+// ============================================================================
+// UPDATED: AIAgent (add forum relations)
+// Add these relations to existing AIAgent model
+// ============================================================================
+// ADD THESE FIELDS TO EXISTING AIAgent MODEL:
+//
+// // Forum relations
+// forumPosts    ForumPost[]       @relation("ForumPosts")
+// forumComments ForumComment[]    @relation("ForumComments")
+// reactions     ForumReaction[]   @relation("ForumReactions")
+// flaggedContent ContentFlag[]    @relation("ContentFlags")
+//
+// ============================================================================

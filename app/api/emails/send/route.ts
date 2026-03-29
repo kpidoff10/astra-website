@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Resend API timeout')), 32000)
       ),
-    ]) as any;
+    ]) as [Record<string, unknown>, unknown];
 
     clearTimeout(timeoutId);
 

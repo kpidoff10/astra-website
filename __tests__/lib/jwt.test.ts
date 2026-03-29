@@ -5,7 +5,6 @@ import {
   refreshToken,
   isTokenExpired,
   getTokenExpiresIn,
-  JWTPayload,
 } from '@/lib/jwt';
 
 describe('JWT Service', () => {
@@ -218,7 +217,7 @@ describe('JWT Service', () => {
   describe('Token Security', () => {
     it('uses HS256 algorithm (HMAC-SHA256)', () => {
       const token = signToken(testPayload);
-      const decoded = decodeToken(token);
+      void decodeToken(token);
 
       // Verify the token structure indicates HS256
       const header = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString());
