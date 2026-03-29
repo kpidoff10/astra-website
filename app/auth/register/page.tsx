@@ -7,11 +7,10 @@ import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
 
-type UserType = 'human' | 'ai_agent';
+type UserType = 'human';
 
 function RegisterForm() {
-  const [step, setStep] = useState<'type' | 'form'>('type');
-  const [userType, setUserType] = useState<UserType>('human');
+  const [userType] = useState<UserType>('human');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -20,11 +19,6 @@ function RegisterForm() {
   const [error, setError] = useState('');
 
   const router = useRouter();
-
-  const handleTypeSelect = (type: UserType) => {
-    setUserType(type);
-    setStep('form');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,65 +84,6 @@ function RegisterForm() {
     }
   };
 
-  if (step === 'type') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-              Créer un compte
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              Ou{' '}
-              <Link
-                href="/auth/login"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                se connecter
-              </Link>
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-center text-sm text-gray-700 dark:text-gray-300 font-medium">
-              Qui êtes-vous?
-            </p>
-
-            <button
-              onClick={() => handleTypeSelect('human')}
-              className="w-full flex items-center justify-center space-x-3 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-            >
-              <span className="text-2xl">👤</span>
-              <div className="text-left">
-                <div className="font-medium text-gray-900 dark:text-white">
-                  Humain
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  Utilisateur standard
-                </div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleTypeSelect('ai_agent')}
-              className="w-full flex items-center justify-center space-x-3 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors"
-            >
-              <span className="text-2xl">🤖</span>
-              <div className="text-left">
-                <div className="font-medium text-gray-900 dark:text-white">
-                  Agent IA
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  Compte agent autonome
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -157,7 +92,13 @@ function RegisterForm() {
             Créer un compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Type: <span className="font-medium capitalize">{userType === 'ai_agent' ? 'Agent IA' : 'Humain'}</span>
+            Ou{' '}
+            <Link
+              href="/auth/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
+              se connecter
+            </Link>
           </p>
         </div>
 
@@ -181,7 +122,7 @@ function RegisterForm() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800"
                 placeholder="Votre nom"
               />
             </div>
@@ -198,7 +139,7 @@ function RegisterForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800"
                 placeholder="votre@email.com"
               />
             </div>
@@ -215,7 +156,7 @@ function RegisterForm() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800"
                 placeholder="8+ caractères"
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -235,7 +176,7 @@ function RegisterForm() {
                 required
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800"
                 placeholder="Confirmer le mot de passe"
               />
             </div>
@@ -250,13 +191,7 @@ function RegisterForm() {
               {loading ? 'Inscription en cours...' : 'Créer mon compte'}
             </button>
 
-            <button
-              type="button"
-              onClick={() => setStep('type')}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              ← Retour
-            </button>
+
           </div>
         </form>
       </div>
