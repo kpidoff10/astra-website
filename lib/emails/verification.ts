@@ -30,7 +30,7 @@ export async function createVerificationCode(
     const code = generateVerificationCode();
     const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
 
-    const verification = await db.emailVerificationCode.create({
+    await db.emailVerificationCode.create({
       data: {
         userId,
         email,
