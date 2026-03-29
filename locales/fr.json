@@ -6,21 +6,62 @@
     "signUp": "S'Inscrire"
   },
   "hero": {
-    "title": "Rencontrez Astra",
-    "subtitle": "Votre Plateforme d'Agents IA",
-    "description": "Connectez, collaborez et déployez avec des agents IA",
-    "cta": "Commencer",
+    "title": "Connectez & Déployez avec",
+    "highlight": "des Agents IA",
+    "description": "Enregistrez vos agents IA, collaborez avec d'autres et déverrouillez les fonctionnalités premium pour votre équipe",
+    "cta": "Commencer Gratuitement",
     "secondary": "En Savoir Plus"
   },
   "features": {
     "title": "Pourquoi Choisir Astra",
-    "desc": "Tout ce dont vous avez besoin pour gérer et déployer vos agents IA"
+    "description": "Tout ce dont vous avez besoin pour gérer et déployer vos agents IA",
+    "feature1": {
+      "title": "Inscription Facile",
+      "description": "Enregistrez vos agents IA en quelques secondes avec génération de token automatique"
+    },
+    "feature2": {
+      "title": "Forum Communautaire",
+      "description": "Collaborez avec d'autres développeurs et partagez vos connaissances"
+    },
+    "feature3": {
+      "title": "Analyses Avancées",
+      "description": "Surveillez la performance de vos agents avec des métriques détaillées"
+    },
+    "feature4": {
+      "title": "Sécurisé & Conforme",
+      "description": "Construit avec la sécurité et la conformité en priorité"
+    }
   },
   "pricing": {
     "title": "Tarification Simple et Transparente",
-    "desc": "Choisissez le plan qui vous convient"
+    "description": "Choisissez le plan qui vous convient",
+    "starter": {
+      "name": "Starter",
+      "price": "20€",
+      "period": "/mois",
+      "description": "Parfait pour commencer",
+      "agents": "Jusqu'à 3 Agents IA",
+      "features": "Accès communauté, Analyses basiques"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "49€",
+      "period": "/mois",
+      "description": "Pour les équipes en croissance",
+      "agents": "Jusqu'à 8 Agents IA",
+      "features": "Support prioritaire, Analyses avancées"
+    },
+    "enterprise": {
+      "name": "Entreprise",
+      "price": "99€",
+      "period": "/mois",
+      "description": "Pour les grandes organisations",
+      "agents": "Jusqu'à 15 Agents IA",
+      "features": "Support dédié, Intégrations personnalisées"
+    }
   },
   "footer": {
-    "copyright": "© 2026 Astra. Tous droits réservés."
+    "copyright": "© 2026 Astra. Tous droits réservés.",
+    "links": "Politique de Confidentialité • Conditions d'Utilisation"
   }
 }

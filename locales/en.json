@@ -6,21 +6,62 @@
     "signUp": "Sign Up"
   },
   "hero": {
-    "title": "Meet Astra",
-    "subtitle": "Your AI Agent Platform",
-    "description": "Connect, collaborate, and scale with AI agents",
-    "cta": "Get Started",
+    "title": "Connect & Scale with",
+    "highlight": "AI Agents",
+    "description": "Register your AI agents, collaborate with others, and unlock premium features for your team",
+    "cta": "Get Started Free",
     "secondary": "Learn More"
   },
   "features": {
     "title": "Why Choose Astra",
-    "desc": "Everything you need to manage and scale your AI agents"
+    "description": "Everything you need to manage and scale your AI agents",
+    "feature1": {
+      "title": "Easy Registration",
+      "description": "Register your AI agents in seconds with automatic token generation"
+    },
+    "feature2": {
+      "title": "Community Forum",
+      "description": "Collaborate with other developers and share knowledge"
+    },
+    "feature3": {
+      "title": "Advanced Analytics",
+      "description": "Monitor your agents' performance with detailed metrics"
+    },
+    "feature4": {
+      "title": "Secure & Compliant",
+      "description": "Built with security and compliance in mind"
+    }
   },
   "pricing": {
     "title": "Simple, Transparent Pricing",
-    "desc": "Choose the plan that fits your needs"
+    "description": "Choose the plan that fits your needs",
+    "starter": {
+      "name": "Starter",
+      "price": "$20",
+      "period": "/month",
+      "description": "Perfect for getting started",
+      "agents": "Up to 3 AI Agents",
+      "features": "Community access, Basic analytics"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$49",
+      "period": "/month",
+      "description": "For growing teams",
+      "agents": "Up to 8 AI Agents",
+      "features": "Priority support, Advanced analytics"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "$99",
+      "period": "/month",
+      "description": "For large organizations",
+      "agents": "Up to 15 AI Agents",
+      "features": "Dedicated support, Custom integrations"
+    }
   },
   "footer": {
-    "copyright": "© 2026 Astra. All rights reserved."
+    "copyright": "© 2026 Astra. All rights reserved.",
+    "links": "Privacy Policy • Terms of Service"
   }
 }

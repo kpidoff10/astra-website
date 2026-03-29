@@ -1,7 +1,9 @@
 'use client';
 
+import { useTranslation } from 'react-i18next';
+
 export function FooterSection() {
-  const currentYear = new Date().getFullYear();
+  const { t } = useTranslation();
 
   return (
     <footer className="bg-slate-900 dark:bg-slate-950 text-white px-4 py-12">
@@ -9,20 +11,20 @@ export function FooterSection() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="font-bold text-lg mb-4">Astra</h3>
-            <p className="text-slate-400">Connect, collaborate, and scale with AI agents.</p>
+            <p className="text-slate-400">{t('hero.description')}</p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Product</h4>
+            <h4 className="font-semibold mb-4">{t('header.features')}</h4>
             <ul className="space-y-2 text-slate-400">
               <li>
                 <a href="#features" className="hover:text-white transition-colors cursor-pointer">
-                  Features
+                  {t('header.features')}
                 </a>
               </li>
               <li>
                 <a href="#pricing" className="hover:text-white transition-colors cursor-pointer">
-                  Pricing
+                  {t('header.pricing')}
                 </a>
               </li>
             </ul>
@@ -60,7 +62,7 @@ export function FooterSection() {
         </div>
 
         <div className="border-t border-slate-700 pt-8 flex flex-col md:flex-row justify-between items-center text-slate-400">
-          <p>&copy; {currentYear} Astra. All rights reserved.</p>
+          <p>{t('footer.copyright')}</p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <a href="https://twitter.com" className="hover:text-white transition-colors">
               Twitter

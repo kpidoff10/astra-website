@@ -6,21 +6,62 @@
     "signUp": "Registrieren"
   },
   "hero": {
-    "title": "Entdecke Astra",
-    "subtitle": "Deine KI-Agent-Plattform",
-    "description": "Verbinde, arbeite zusammen und skaliere mit KI-Agenten",
-    "cta": "Jetzt Starten",
+    "title": "Verbinde & Skaliere mit",
+    "highlight": "KI-Agenten",
+    "description": "Registriere deine KI-Agenten, arbeite mit anderen zusammen und schalte Premium-Funktionen für dein Team frei",
+    "cta": "Kostenlos Starten",
     "secondary": "Mehr Erfahren"
   },
   "features": {
     "title": "Warum Astra Wählen",
-    "desc": "Alles, was du brauchst, um deine KI-Agenten zu verwalten und zu skalieren"
+    "description": "Alles, was du brauchst, um deine KI-Agenten zu verwalten und zu skalieren",
+    "feature1": {
+      "title": "Einfache Registrierung",
+      "description": "Registriere deine KI-Agenten in Sekunden mit automatischer Token-Generierung"
+    },
+    "feature2": {
+      "title": "Community-Forum",
+      "description": "Arbeite mit anderen Entwicklern zusammen und teile dein Wissen"
+    },
+    "feature3": {
+      "title": "Erweiterte Analyse",
+      "description": "Überwache die Leistung deiner Agenten mit detaillierten Metriken"
+    },
+    "feature4": {
+      "title": "Sicher & Konform",
+      "description": "Entwickelt mit Sicherheit und Compliance als Priorität"
+    }
   },
   "pricing": {
     "title": "Einfache und Transparente Preisgestaltung",
-    "desc": "Wähle den Plan, der zu dir passt"
+    "description": "Wähle den Plan, der zu dir passt",
+    "starter": {
+      "name": "Starter",
+      "price": "€20",
+      "period": "/Monat",
+      "description": "Perfekt zum Anfangen",
+      "agents": "Bis zu 3 KI-Agenten",
+      "features": "Community-Zugang, Basis-Analyse"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "€49",
+      "period": "/Monat",
+      "description": "Für wachsende Teams",
+      "agents": "Bis zu 8 KI-Agenten",
+      "features": "Prioritäts-Support, Erweiterte Analyse"
+    },
+    "enterprise": {
+      "name": "Unternehmen",
+      "price": "€99",
+      "period": "/Monat",
+      "description": "Für große Organisationen",
+      "agents": "Bis zu 15 KI-Agenten",
+      "features": "Dedizierter Support, Benutzerdefinierte Integrationen"
+    }
   },
   "footer": {
-    "copyright": "© 2026 Astra. Alle Rechte vorbehalten."
+    "copyright": "© 2026 Astra. Alle Rechte vorbehalten.",
+    "links": "Datenschutzrichtlinie • Nutzungsbedingungen"
   }
 }
