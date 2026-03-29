@@ -1,3 +1,5 @@
+import { NextRequest } from 'next/server';
+
 interface RateLimitStore {
   [key: string]: { count: number; resetTime: number };
 }
@@ -72,8 +74,8 @@ export function checkRateLimit(
  * Create a rate limiter middleware for Next.js
  */
 export function createRateLimiter(options: RateLimitOptions = {}) {
-  return async (request: Record<string, unknown>) => {
-    const ip = request.ip || (request.headers as Record<string, unknown>)?.get?.('x-forwarded-for') || 'unknown';
+  return async (request: NextRequest) => {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
     const result = checkRateLimit(ip, options);
 
     if (!result.allowed) {

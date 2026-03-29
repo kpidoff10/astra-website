@@ -75,5 +75,6 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function getCurrentUserId(): Promise<string | null> {
   const session = await getCurrentSession();
-  return (session?.user as Record<string, unknown>)?.id || null;
+  const id = (session?.user as Record<string, unknown>)?.id;
+  return typeof id === 'string' ? id : null;
 }

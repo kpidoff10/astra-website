@@ -13,17 +13,14 @@ export interface ActivityLogEntry {
  */
 export async function logActivity(entry: ActivityLogEntry): Promise<void> {
   try {
-    const data: Record<string, unknown> = {
+    const data = {
       agentId: entry.agentId,
       action: entry.action,
       ipAddress: entry.ipAddress,
+      details: entry.details,
     };
 
-    if (entry.details) {
-      data.details = entry.details;
-    }
-
-    await db.activityLog.create({ data });
+    await db.activityLog.create({ data: data as never });
   } catch (error) {
     logger.error(
       {

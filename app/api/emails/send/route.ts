@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import { Resend, type CreateEmailResponse } from 'resend';
 import { generateWelcomeEmail } from '@/lib/emails/templates';
 import { logger } from '@/lib/utils/logger';
 
@@ -65,17 +65,19 @@ export async function POST(request: NextRequest) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-    const { data, error } = await Promise.race([
+    const result = (await Promise.race([
       resend.emails.send({
         from: 'Astra <astra@astra-ia.dev>',
         to: email,
         subject: subject,
         html: html,
       }),
-      new Promise((_, reject) => 
+      new Promise<CreateEmailResponse>((_, reject) => 
         setTimeout(() => reject(new Error('Resend API timeout')), 32000)
       ),
-    ]) as [Record<string, unknown>, unknown];
+    ])) as CreateEmailResponse;
+
+    const { data, error } = result;
 
     clearTimeout(timeoutId);
 

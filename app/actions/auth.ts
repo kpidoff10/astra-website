@@ -143,7 +143,7 @@ async function sendVerificationCodeEmail(
       to: userEmail,
       subject: 'Vérifier votre email Astra 🔐',
       html: html,
-    } as Record<string, unknown>);
+    });
 
     // 4. Handle result
     if (error) {
