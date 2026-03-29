@@ -31,8 +31,15 @@ export async function sendWelcomeEmail(
       html,
     });
 
+    console.log('[Email] Response received:', JSON.stringify(response));
+
     if (response.error) {
       console.error('[Email] Send error:', response.error);
+      return null;
+    }
+
+    if (!response.data?.id) {
+      console.error('[Email] No email ID in response:', response);
       return null;
     }
 
