@@ -73,8 +73,8 @@ function RegisterForm() {
       }
 
       if (result.success) {
-        toast.success('Compte créé avec succès! Veuillez vous connecter.');
-        router.push(`/auth/login?email=${encodeURIComponent(email)}`);
+        toast.success('Compte créé! Veuillez vérifier votre email.');
+        router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
       }
     } catch (err) {
       setError('Une erreur est survenue');
