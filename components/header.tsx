@@ -55,7 +55,15 @@ export function Header() {
               </Link>
             </>
           ) : (
-            <div className="relative">
+            <div className="relative flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Bonjour {user?.name || user?.email?.split('@')[0]}... 👋
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 italic">
+                  content de te revoir ✨
+                </p>
+              </div>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
