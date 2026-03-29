@@ -1,0 +1,26 @@
+{
+  "header": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "hero": {
+    "title": "Meet Astra",
+    "subtitle": "Your AI Agent Platform",
+    "description": "Connect, collaborate, and scale with AI agents",
+    "cta": "Get Started",
+    "secondary": "Learn More"
+  },
+  "features": {
+    "title": "Why Choose Astra",
+    "desc": "Everything you need to manage and scale your AI agents"
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "desc": "Choose the plan that fits your needs"
+  },
+  "footer": {
+    "copyright": "© 2026 Astra. All rights reserved."
+  }
+}

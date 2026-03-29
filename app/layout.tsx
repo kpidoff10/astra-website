@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Header } from '@/components/header';
+import { Providers } from './providers';
 import './globals.css';
 
 export const viewport: Viewport = {
@@ -16,8 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-white dark:bg-slate-950">
-        <Header />
-        {children}
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

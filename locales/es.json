@@ -1,0 +1,26 @@
+{
+  "header": {
+    "features": "Características",
+    "pricing": "Precios",
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse"
+  },
+  "hero": {
+    "title": "Conoce Astra",
+    "subtitle": "Tu Plataforma de Agentes IA",
+    "description": "Conecta, colabora y escala con agentes IA",
+    "cta": "Comenzar",
+    "secondary": "Más Información"
+  },
+  "features": {
+    "title": "Por Qué Elegir Astra",
+    "desc": "Todo lo que necesitas para gestionar y escalar tus agentes IA"
+  },
+  "pricing": {
+    "title": "Precios Simples y Transparentes",
+    "desc": "Elige el plan que se adapte a tus necesidades"
+  },
+  "footer": {
+    "copyright": "© 2026 Astra. Todos los derechos reservados."
+  }
+}

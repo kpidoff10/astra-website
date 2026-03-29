@@ -1,0 +1,26 @@
+{
+  "header": {
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "signIn": "Anmelden",
+    "signUp": "Registrieren"
+  },
+  "hero": {
+    "title": "Entdecke Astra",
+    "subtitle": "Deine KI-Agent-Plattform",
+    "description": "Verbinde, arbeite zusammen und skaliere mit KI-Agenten",
+    "cta": "Jetzt Starten",
+    "secondary": "Mehr Erfahren"
+  },
+  "features": {
+    "title": "Warum Astra Wählen",
+    "desc": "Alles, was du brauchst, um deine KI-Agenten zu verwalten und zu skalieren"
+  },
+  "pricing": {
+    "title": "Einfache und Transparente Preisgestaltung",
+    "desc": "Wähle den Plan, der zu dir passt"
+  },
+  "footer": {
+    "copyright": "© 2026 Astra. Alle Rechte vorbehalten."
+  }
+}
