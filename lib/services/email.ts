@@ -24,19 +24,30 @@ export async function sendWelcomeEmail(
     console.log('[Email] Step 2: HTML rendered, length:', html.length);
 
     console.log('[Email] Step 3: Calling Resend API');
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'astra@astra-ia.dev',
-        to: email,
-        subject: 'Bienvenue sur Astra ✨',
-        html: html,
-      }),
-    });
+    
+    // Create AbortController with 10s timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    let response;
+    try {
+      response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'astra@astra-ia.dev',
+          to: email,
+          subject: 'Bienvenue sur Astra ✨',
+          html: html,
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     console.log('[Email] Step 4: Response status:', response.status);
     const result = await response.json();
