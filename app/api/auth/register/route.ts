@@ -13,7 +13,6 @@ import {
 import { logger } from '@/lib/utils/logger';
 import { USER_ROLES, AUTH_ERRORS, VALIDATION } from '@/lib/constants';
 import { createAuthRateLimiter } from '@/lib/middleware/rate-limit';
-import { sendWelcomeEmail } from '@/lib/services/email';
 
 // Initialize rate limiter
 const authLimiter = createAuthRateLimiter();
@@ -110,21 +109,22 @@ export async function POST(request: NextRequest) {
       'User registered successfully'
     );
 
-    // Send welcome email in background (don't block response)
-    // Use setTimeout to ensure it happens after response is sent
-    setTimeout(async () => {
-      try {
-        console.log('[BG] Sending email for:', user.email);
-        const emailId = await sendWelcomeEmail(user.email, user.name || undefined);
-        if (emailId) {
-          console.log('[BG] Email sent! ID:', emailId);
-        } else {
-          console.log('[BG] Email send returned null');
-        }
-      } catch (err) {
-        console.error('[BG] Email error:', err);
-      }
-    }, 0);
+    // Send welcome email via API endpoint (60s timeout)
+    console.log('[Register] Queueing email send to /api/emails/send');
+    const protocol = process.env.VERCEL_URL ? 'https' : 'http';
+    const host = process.env.VERCEL_URL || 'localhost:3000';
+    
+    fetch(`${protocol}://${host}/api/emails/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user.email,
+        name: user.name || undefined,
+        type: 'welcome',
+      }),
+    }).catch((err) => {
+      console.error('[Register] Email API call failed:', err);
+    });
 
     // Log activity if this is an AI agent registration
     if (role === USER_ROLES.AI_AGENT) {
