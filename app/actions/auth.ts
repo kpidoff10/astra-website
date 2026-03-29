@@ -73,16 +73,12 @@ export async function registerUser(formData: {
       '[SA] User registered successfully'
     );
 
-    // 🔥 FIRE-AND-FORGET: Send email async without blocking registration
-    // User account is already created, email send is "best effort"
-    sendWelcomeEmailAsync(user.id, user.email, user.name || undefined).catch(
-      (err) => {
-        logger.error(
-          { userId: user.id, email: user.email, error: err },
-          '[SA] Background welcome email send failed'
-        );
-      }
-    );
+    // ✅ AWAIT the email send (important!)
+    // Even though it's "fire-and-forget", we MUST await for the Server Action to finish
+    // Otherwise Vercel cuts off the execution before email sends
+    logger.info({ email: user.email }, '[SA] ⏳ Awaiting email send...');
+    await sendWelcomeEmailAsync(user.id, user.email, user.name || undefined);
+    logger.info({ email: user.email }, '[SA] ✅ Email send completed (or failed)');
 
     return {
       success: true,
