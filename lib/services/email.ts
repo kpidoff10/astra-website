@@ -1,43 +1,53 @@
-'use server';
-
-import { Resend } from 'resend';
+import { render } from '@react-email/components';
 import { WelcomeEmail } from '@/lib/emails/welcome';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Send welcome email to new user
- * This is a server-side function using the Resend SDK
  */
 export async function sendWelcomeEmail(
   email: string,
   name?: string
 ): Promise<string | null> {
   try {
-    console.log('[Email] Sending to:', email);
-
-    // Use Resend with React component (not HTML render)
-    const { data, error } = await resend.emails.send({
-      from: 'astra@astra-ia.dev',
-      to: email,
-      subject: 'Bienvenue sur Astra ✨',
-      react: WelcomeEmail({ email, name }),
-    });
-
-    if (error) {
-      console.error('[Email] Resend error:', error);
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error('[Email] No API key');
       return null;
     }
 
-    if (data?.id) {
-      console.log('[Email] Success! ID:', data.id);
-      return data.id;
+    console.log('[Email] Rendering component');
+    const emailHtml = await render(
+      WelcomeEmail({ email, name })
+    );
+
+    console.log('[Email] HTML rendered, calling API');
+    
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: 'astra@astra-ia.dev',
+        to: email,
+        subject: 'Bienvenue sur Astra ✨',
+        html: emailHtml,
+      }),
+    });
+
+    console.log('[Email] Response status:', res.status);
+    const result = await res.json();
+    console.log('[Email] Response:', JSON.stringify(result));
+
+    if (result.id) {
+      console.log('[Email] Email sent! ID:', result.id);
+      return result.id;
     }
 
-    console.log('[Email] No ID returned, data:', data);
     return null;
-  } catch (error) {
-    console.error('[Email] Exception:', error);
+  } catch (err) {
+    console.error('[Email] Error:', err);
     return null;
   }
 }
