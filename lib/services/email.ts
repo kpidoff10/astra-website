@@ -10,37 +10,58 @@ export async function sendWelcomeEmail(
   name?: string
 ): Promise<string | null> {
   try {
-    console.log('[Email] Starting send for:', email);
+    console.log('[Email] START - for:', email);
 
-    // Create fresh instance for each send (best practice)
+    // Validate API key
+    if (!process.env.RESEND_API_KEY) {
+      console.error('[Email] RESEND_API_KEY not set!');
+      return null;
+    }
+
+    console.log('[Email] Creating Resend instance');
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    console.log('[Email] Calling resend.emails.send()');
+    console.log('[Email] Preparing to send');
 
-    // Use react: parameter directly with component (official way)
-    const { data, error } = await resend.emails.send({
+    // Create promise with timeout
+    const emailPromise = resend.emails.send({
       from: 'astra@astra-ia.dev',
       to: email,
       subject: 'Bienvenue sur Astra ✨',
       react: WelcomeEmail({ email, name }),
     });
 
-    console.log('[Email] Response - error:', error, 'data:', data);
+    console.log('[Email] Awaiting response');
+
+    // Add timeout (5 seconds)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error('[Email] Request timeout (5s)')),
+        5000
+      )
+    );
+
+    const { data, error } = await Promise.race([
+      emailPromise,
+      timeoutPromise as Promise<any>,
+    ]);
+
+    console.log('[Email] Response received - error:', error, 'id:', data?.id);
 
     if (error) {
-      console.error('[Email] Send failed:', error);
+      console.error('[Email] Resend error:', error);
       return null;
     }
 
     if (data?.id) {
-      console.log('[Email] Success! ID:', data.id);
+      console.log('[Email] SUCCESS! ID:', data.id);
       return data.id;
     }
 
-    console.log('[Email] No ID in data');
+    console.log('[Email] NO ID in response');
     return null;
   } catch (err) {
-    console.error('[Email] Exception caught:', err);
+    console.error('[Email] EXCEPTION:', String(err));
     return null;
   }
 }

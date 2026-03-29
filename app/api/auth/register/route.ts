@@ -98,13 +98,20 @@ export async function POST(request: NextRequest) {
       'User registered'
     );
 
-    // Send welcome email (non-blocking)
-    sendWelcomeEmail(user.email, user.name || undefined).catch((err) => {
-      logger.error(
-        { userId: user.id, email: user.email, error: err },
-        'Failed to send welcome email'
-      );
-    });
+    // Send welcome email (non-blocking, don't await)
+    console.log('[Register] Triggering email send for:', user.email);
+    const emailPromise = sendWelcomeEmail(user.email, user.name || undefined);
+    emailPromise
+      .then((id) => {
+        console.log('[Register] Email promise resolved with ID:', id);
+      })
+      .catch((err) => {
+        console.error('[Register] Email promise rejected:', err);
+        logger.error(
+          { userId: user.id, email: user.email, error: err },
+          'Failed to send welcome email'
+        );
+      });
 
     // Log activity if this is an AI agent registration
     if (role === USER_ROLES.AI_AGENT) {
