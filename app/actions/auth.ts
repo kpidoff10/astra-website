@@ -9,7 +9,7 @@ import { generateWelcomeEmail } from '@/lib/emails/templates';
 
 /**
  * Server Action for user registration
- * Handles: validation, user creation, email sending
+ * Handles: validation, user creation, email sending (async, fire-and-forget)
  */
 export async function registerUser(formData: {
   email: string;
@@ -58,7 +58,7 @@ export async function registerUser(formData: {
     const hashedPassword = await hashPassword(password);
 
     // Create user
-    console.log('[SA] Creating user:', email);
+    logger.info({ email }, '[SA] Creating user');
     const user = await db.user.create({
       data: {
         email,
@@ -70,35 +70,19 @@ export async function registerUser(formData: {
 
     logger.info(
       { userId: user.id, email: user.email, role },
-      'User registered via Server Action'
+      '[SA] User registered successfully'
     );
 
-    // Send email DIRECTLY via Resend (no API route needed)
-    console.log('[SA] 🔵 SENDING EMAIL DIRECTLY VIA RESEND for:', user.email);
-    try {
-      console.log('[SA] ⏳ Creating Resend instance...');
-      const apiKey = process.env.RESEND_API_KEY || '';
-      const resend = new Resend(apiKey);
-      
-      console.log('[SA] ⏳ Generating email HTML...');
-      const html = generateWelcomeEmail(user.email, user.name || undefined);
-      
-      console.log('[SA] ⏳ Calling resend.emails.send()...');
-      const { data, error } = await resend.emails.send({
-        from: 'Astra <astra@astra-ia.dev>',
-        to: user.email,
-        subject: 'Bienvenue sur Astra ✨',
-        html: html,
-      } as any);
-      
-      if (error) {
-        console.error('[SA] ❌ RESEND ERROR:', error.message);
-      } else {
-        console.log('[SA] ✅✅✅ EMAIL SENT! ID:', data?.id);
+    // 🔥 FIRE-AND-FORGET: Send email async without blocking registration
+    // User account is already created, email send is "best effort"
+    sendWelcomeEmailAsync(user.id, user.email, user.name || undefined).catch(
+      (err) => {
+        logger.error(
+          { userId: user.id, email: user.email, error: err },
+          '[SA] Background welcome email send failed'
+        );
       }
-    } catch (emailErr) {
-      console.error('[SA] ❌ EMAIL EXCEPTION:', emailErr instanceof Error ? emailErr.message : String(emailErr));
-    }
+    );
 
     return {
       success: true,
@@ -110,9 +94,161 @@ export async function registerUser(formData: {
       },
     };
   } catch (error) {
-    console.error('[SA] Registration error:', error);
+    logger.error({ error }, '[SA] Registration failed');
     return {
       error: error instanceof Error ? error.message : 'Registration failed',
     };
   }
+}
+
+/**
+ * Fire-and-forget email send function
+ * - Logs attempt to EmailAudit table
+ * - Sends via Resend
+ * - Updates audit with result
+ * - Does NOT throw (handled by .catch() in registerUser)
+ */
+async function sendWelcomeEmailAsync(
+  userId: string,
+  userEmail: string,
+  userName?: string
+): Promise<void> {
+  try {
+    // 1. Create audit record (shows we attempted)
+    const audit = await db.emailAudit.create({
+      data: {
+        userId,
+        email: userEmail,
+        template: 'welcome',
+        status: 'PENDING',
+      },
+    });
+
+    logger.info(
+      { auditId: audit.id, email: userEmail },
+      '[EmailSend] 📋 Audit record created'
+    );
+
+    // 2. Send via Resend
+    const apiKey = process.env.RESEND_API_KEY || '';
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY not configured');
+    }
+
+    const resend = new Resend(apiKey);
+    const html = generateWelcomeEmail(userEmail, userName);
+
+    logger.info({ email: userEmail }, '[EmailSend] ⏳ Calling Resend API...');
+
+    const { data, error } = await resend.emails.send({
+      from: 'Astra <astra@astra-ia.dev>',
+      to: userEmail,
+      subject: 'Bienvenue sur Astra ✨',
+      html: html,
+    } as any);
+
+    // 3. Handle result
+    if (error) {
+      // Email send failed
+      await db.emailAudit.update({
+        where: { id: audit.id },
+        data: {
+          status: 'FAILED',
+          error: error.message,
+        },
+      });
+
+      logger.error(
+        { userId, email: userEmail, error: error.message },
+        '[EmailSend] ❌ Resend email send failed'
+      );
+
+      // Alert admin (stub for future Slack/Discord)
+      await notifyAdminEmailFailure(userId, userEmail, error.message);
+    } else if (data?.id) {
+      // Email sent successfully
+      await db.emailAudit.update({
+        where: { id: audit.id },
+        data: {
+          status: 'SENT',
+          resendId: data.id,
+          sentAt: new Date(),
+        },
+      });
+
+      logger.info(
+        { userId, email: userEmail, resendId: data.id },
+        '[EmailSend] ✅ Welcome email sent successfully'
+      );
+    } else {
+      // Unexpected: no error, but no data.id
+      await db.emailAudit.update({
+        where: { id: audit.id },
+        data: {
+          status: 'FAILED',
+          error: 'Unknown: No email ID returned',
+        },
+      });
+
+      logger.warn(
+        { userId, email: userEmail },
+        '[EmailSend] ⚠️ Email send returned empty response'
+      );
+    }
+  } catch (err) {
+    logger.error(
+      { userId, email: userEmail, error: err },
+      '[EmailSend] ❌ Unexpected error in email send'
+    );
+
+    // Try to mark audit as FAILED (best effort)
+    try {
+      const audit = await db.emailAudit.findFirst({
+        where: {
+          userId,
+          email: userEmail,
+          template: 'welcome',
+          status: 'PENDING',
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (audit) {
+        await db.emailAudit.update({
+          where: { id: audit.id },
+          data: {
+            status: 'FAILED',
+            error: err instanceof Error ? err.message : 'Unknown error',
+          },
+        });
+      }
+    } catch (updateErr) {
+      logger.error(
+        { error: updateErr },
+        '[EmailSend] Failed to update audit record (double failure)'
+      );
+    }
+  }
+}
+
+/**
+ * Notify admin of email failures
+ * TODO: Send to Slack/Discord when failures exceed threshold
+ * For now: just logs
+ */
+async function notifyAdminEmailFailure(
+  userId: string,
+  email: string,
+  errorMessage: string
+): Promise<void> {
+  logger.warn(
+    { userId, email, error: errorMessage },
+    '[EmailSend] 🚨 Email failure alert (implement Slack/Discord notification here)'
+  );
+
+  // TODO: When implemented:
+  // await sendSlackAlert({
+  //   text: `:email_failure: Email send failed for ${email}`,
+  //   details: errorMessage,
+  // });
 }
