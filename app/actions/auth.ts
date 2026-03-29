@@ -77,7 +77,8 @@ export async function registerUser(formData: {
     console.log('[SA] 🔵 SENDING EMAIL DIRECTLY VIA RESEND for:', user.email);
     try {
       console.log('[SA] ⏳ Creating Resend instance...');
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const apiKey = process.env.RESEND_API_KEY || '';
+      const resend = new Resend(apiKey);
       
       console.log('[SA] ⏳ Generating email HTML...');
       const html = generateWelcomeEmail(user.email, user.name);
