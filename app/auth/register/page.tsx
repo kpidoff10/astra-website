@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { registerUser } from '@/app/actions/auth';
 import { PasswordInput } from '@/components/password-input';
 
 export const dynamic = 'force-dynamic';
@@ -56,29 +57,25 @@ function RegisterForm() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          name: name || undefined,
-          userType,
-        }),
-        // Note: Password hashing (PBKDF2-600k) takes ~10 seconds for security
-        // Browser fetch has default 5min timeout, should be fine
+      // Call Server Action instead of API endpoint
+      const result = await registerUser({
+        email,
+        password,
+        name: name || undefined,
+        userType,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Erreur lors de l\'inscription');
-        toast.error(data.error || 'Erreur lors de l\'inscription');
+      if (result.error) {
+        setError(result.error);
+        toast.error(result.error);
+        setLoading(false);
         return;
       }
 
-      toast.success('Compte créé avec succès! Veuillez vous connecter.');
-      router.push(`/auth/login?email=${encodeURIComponent(email)}`);
+      if (result.success) {
+        toast.success('Compte créé avec succès! Veuillez vous connecter.');
+        router.push(`/auth/login?email=${encodeURIComponent(email)}`);
+      }
     } catch (err) {
       setError('Une erreur est survenue');
       toast.error('Une erreur est survenue');
