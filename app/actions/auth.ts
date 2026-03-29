@@ -71,20 +71,10 @@ export async function registerUser(formData: {
       'User registered via Server Action'
     );
 
-    // Send email via dedicated API endpoint (60s timeout instead of 10s)
-    console.log('[SA] Queuing email to /api/emails/send');
-    const host = process.env.VERCEL_URL || 'localhost:3000';
-    const protocol = process.env.VERCEL_URL ? 'https' : 'http';
-    
-    fetch(`${protocol}://${host}/api/emails/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: user.email,
-        name: user.name || undefined,
-      }),
-    }).catch((err) => {
-      console.error('[SA] Email API call error:', err);
+    // Send email via Server Action (no external call needed)
+    console.log('[SA] Queueing welcome email');
+    sendWelcomeEmailAction(user.email, user.name || undefined).catch((err) => {
+      console.error('[SA] Welcome email failed:', err);
     });
 
     return {
@@ -101,5 +91,47 @@ export async function registerUser(formData: {
     return {
       error: error instanceof Error ? error.message : 'Registration failed',
     };
+  }
+}
+
+/**
+ * Protected Server Action to send welcome email
+ * Runs on the server, no external API call
+ */
+async function sendWelcomeEmailAction(email: string, name?: string): Promise<string | null> {
+  try {
+    console.log('[EmailAction] Sending welcome email to:', email);
+
+    // Import email template
+    const { generateWelcomeEmail } = await import('@/lib/emails/templates');
+    const html = generateWelcomeEmail(email, name);
+
+    // Import Resend
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    console.log('[EmailAction] Calling Resend API');
+    const { data, error } = await resend.emails.send({
+      from: 'Astra <astra@astra-ia.dev>',
+      to: email,
+      subject: 'Bienvenue sur Astra ✨',
+      html: html,
+    });
+
+    if (error) {
+      console.error('[EmailAction] Resend error:', error);
+      return null;
+    }
+
+    if (data?.id) {
+      console.log('[EmailAction] ✅ SUCCESS! Email ID:', data.id);
+      return data.id;
+    }
+
+    console.log('[EmailAction] ❌ No ID in response');
+    return null;
+  } catch (err) {
+    console.error('[EmailAction] Exception:', err);
+    return null;
   }
 }

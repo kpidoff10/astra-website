@@ -109,22 +109,8 @@ export async function POST(request: NextRequest) {
       'User registered successfully'
     );
 
-    // Send welcome email via API endpoint (60s timeout)
-    console.log('[Register] Queueing email send to /api/emails/send');
-    const protocol = process.env.VERCEL_URL ? 'https' : 'http';
-    const host = process.env.VERCEL_URL || 'localhost:3000';
-    
-    fetch(`${protocol}://${host}/api/emails/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: user.email,
-        name: user.name || undefined,
-        type: 'welcome',
-      }),
-    }).catch((err) => {
-      console.error('[Register] Email API call failed:', err);
-    });
+    // Note: Email is sent by registerUser Server Action
+    // This endpoint is kept for backward compatibility
 
     // Log activity if this is an AI agent registration
     if (role === USER_ROLES.AI_AGENT) {
