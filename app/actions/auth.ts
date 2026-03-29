@@ -96,7 +96,7 @@ export async function registerUser(formData: {
 
 /**
  * Protected Server Action to send welcome email
- * Runs on the server, no external API call
+ * Uses raw fetch to Resend API (no SDK dependencies)
  */
 async function sendWelcomeEmailAction(email: string, name?: string): Promise<string | null> {
   try {
@@ -106,29 +106,37 @@ async function sendWelcomeEmailAction(email: string, name?: string): Promise<str
     const { generateWelcomeEmail } = await import('@/lib/emails/templates');
     const html = generateWelcomeEmail(email, name);
 
-    // Import Resend
-    const { Resend } = await import('resend');
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
-    console.log('[EmailAction] Calling Resend API');
-    const { data, error } = await resend.emails.send({
-      from: 'Astra <astra@astra-ia.dev>',
-      to: email,
-      subject: 'Bienvenue sur Astra ✨',
-      html: html,
-    });
-
-    if (error) {
-      console.error('[EmailAction] Resend error:', error);
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error('[EmailAction] NO RESEND_API_KEY');
       return null;
     }
+
+    console.log('[EmailAction] Calling Resend API with fetch');
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Astra <astra@astra-ia.dev>',
+        to: email,
+        subject: 'Bienvenue sur Astra ✨',
+        html: html,
+      }),
+    });
+
+    console.log('[EmailAction] Response status:', response.status);
+    const data = await response.json();
+    console.log('[EmailAction] Response data:', JSON.stringify(data));
 
     if (data?.id) {
       console.log('[EmailAction] ✅ SUCCESS! Email ID:', data.id);
       return data.id;
     }
 
-    console.log('[EmailAction] ❌ No ID in response');
+    console.error('[EmailAction] ❌ Failed. Response:', data);
     return null;
   } catch (err) {
     console.error('[EmailAction] Exception:', err);
