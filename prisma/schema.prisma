@@ -31,6 +31,7 @@ model User {
   subscription  Subscription?
   managedIAs    AIAgent[]  @relation("OwnerIAs")
   emailAudits   EmailAudit[]
+  verificationCodes EmailVerificationCode[]
 
   @@index([email])
   @@index([createdAt])
@@ -281,3 +282,26 @@ enum EmailStatus {
   FAILED
   DELIVERED
 }
+
+// ============================================================================
+// EMAIL VERIFICATION
+// ============================================================================
+
+model EmailVerificationCode {
+  id        String    @id @default(cuid())
+  userId    String
+  email     String
+  code      String    @unique  // 6-digit code
+  expiresAt DateTime
+  verifiedAt DateTime?
+  attempts  Int       @default(0)  // Track failed attempts
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([code])
+  @@index([expiresAt])
+}
+

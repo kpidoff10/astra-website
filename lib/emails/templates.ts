@@ -13,6 +13,58 @@ import {
   emailWrapper,
 } from './components';
 
+/**
+ * Verification code email template
+ */
+export function generateVerificationEmail(
+  email: string,
+  code: string,
+  name?: string,
+  expiresInMinutes: number = 15
+): string {
+  const displayName = name || email.split('@')[0];
+
+  const content = `
+    ${emailHeader('Vérifier votre email', '🔐')}
+    
+    <div class="email-content">
+      ${emailGreeting(displayName)}
+      
+      ${emailParagraph(
+        'Bienvenue sur Astra! Pour finaliser votre inscription, veuillez vérifier votre adresse email en utilisant le code ci-dessous:'
+      )}
+      
+      <div style="
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        margin: 20px 0;
+        font-family: monospace;
+      ">
+        <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">Votre code de vérification</p>
+        <p style="font-size: 32px; font-weight: bold; color: #000; letter-spacing: 4px; margin: 0;">
+          ${code}
+        </p>
+      </div>
+      
+      ${emailParagraph(
+        `Ce code expires dans <strong>${expiresInMinutes} minutes</strong>. Si vous n'avez pas demandé ce code, ignorez cet email.`
+      )}
+      
+      ${emailDivider()}
+      
+      <p style="font-size: 12px; color: #999; text-align: center;">
+        Besoin d'aide? Contactez notre support à support@astra-ia.dev
+      </p>
+      
+      ${emailFooter('support@astra-ia.dev', 'L\'équipe Astra')}
+    </div>
+  `;
+
+  return emailWrapper(content);
+}
+
 export function generateWelcomeEmail(email: string, name?: string): string {
   const displayName = name || email.split('@')[0];
   const baseUrl = process.env.NEXTAUTH_URL || 'https://astra-website.vercel.app';

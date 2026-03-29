@@ -5,7 +5,8 @@ import { hashPassword } from '@/lib/auth';
 import { logger } from '@/lib/utils/logger';
 import { USER_ROLES, AUTH_ERRORS, VALIDATION } from '@/lib/constants';
 import { Resend } from 'resend';
-import { generateWelcomeEmail } from '@/lib/emails/templates';
+import { generateVerificationEmail } from '@/lib/emails/templates';
+import { createVerificationCode } from '@/lib/emails/verification';
 
 /**
  * Server Action for user registration
@@ -73,12 +74,10 @@ export async function registerUser(formData: {
       '[SA] User registered successfully'
     );
 
-    // ✅ AWAIT the email send (important!)
-    // Even though it's "fire-and-forget", we MUST await for the Server Action to finish
-    // Otherwise Vercel cuts off the execution before email sends
-    logger.info({ email: user.email }, '[SA] ⏳ Awaiting email send...');
-    await sendWelcomeEmailAsync(user.id, user.email, user.name || undefined);
-    logger.info({ email: user.email }, '[SA] ✅ Email send completed (or failed)');
+    // ✅ AWAIT the verification code send (important!)
+    logger.info({ email: user.email }, '[SA] ⏳ Sending verification code...');
+    await sendVerificationCodeEmail(user.id, user.email, user.name || undefined);
+    logger.info({ email: user.email }, '[SA] ✅ Verification code sent');
 
     return {
       success: true,
@@ -98,54 +97,56 @@ export async function registerUser(formData: {
 }
 
 /**
- * Fire-and-forget email send function
+ * Send verification code email
+ * - Creates a 6-digit code
  * - Logs attempt to EmailAudit table
  * - Sends via Resend
  * - Updates audit with result
- * - Does NOT throw (handled by .catch() in registerUser)
  */
-async function sendWelcomeEmailAsync(
+async function sendVerificationCodeEmail(
   userId: string,
   userEmail: string,
   userName?: string
 ): Promise<void> {
   try {
-    // 1. Create audit record (shows we attempted)
+    // 1. Create verification code
+    logger.info({ email: userEmail }, '[VerificationEmail] ⏳ Creating code...');
+    const { code, expiresAt } = await createVerificationCode(userId, userEmail, 15);
+    logger.info(
+      { email: userEmail, code, expiresAt },
+      '[VerificationEmail] ✅ Code created'
+    );
+
+    // 2. Create audit record
     const audit = await db.emailAudit.create({
       data: {
         userId,
         email: userEmail,
-        template: 'welcome',
+        template: 'verification',
         status: 'PENDING',
       },
     });
 
-    logger.info(
-      { auditId: audit.id, email: userEmail },
-      '[EmailSend] 📋 Audit record created'
-    );
-
-    // 2. Send via Resend
+    // 3. Send via Resend
     const apiKey = process.env.RESEND_API_KEY || '';
     if (!apiKey) {
       throw new Error('RESEND_API_KEY not configured');
     }
 
     const resend = new Resend(apiKey);
-    const html = generateWelcomeEmail(userEmail, userName);
+    const html = generateVerificationEmail(userEmail, code, userName, 15);
 
-    logger.info({ email: userEmail }, '[EmailSend] ⏳ Calling Resend API...');
+    logger.info({ email: userEmail }, '[VerificationEmail] ⏳ Sending via Resend...');
 
     const { data, error } = await resend.emails.send({
       from: 'Astra <astra@astra-ia.dev>',
       to: userEmail,
-      subject: 'Bienvenue sur Astra ✨',
+      subject: 'Vérifier votre email Astra 🔐',
       html: html,
     } as any);
 
-    // 3. Handle result
+    // 4. Handle result
     if (error) {
-      // Email send failed
       await db.emailAudit.update({
         where: { id: audit.id },
         data: {
@@ -156,13 +157,11 @@ async function sendWelcomeEmailAsync(
 
       logger.error(
         { userId, email: userEmail, error: error.message },
-        '[EmailSend] ❌ Resend email send failed'
+        '[VerificationEmail] ❌ Failed to send'
       );
 
-      // Alert admin (stub for future Slack/Discord)
       await notifyAdminEmailFailure(userId, userEmail, error.message);
     } else if (data?.id) {
-      // Email sent successfully
       await db.emailAudit.update({
         where: { id: audit.id },
         data: {
@@ -174,10 +173,9 @@ async function sendWelcomeEmailAsync(
 
       logger.info(
         { userId, email: userEmail, resendId: data.id },
-        '[EmailSend] ✅ Welcome email sent successfully'
+        '[VerificationEmail] ✅ Verification email sent successfully'
       );
     } else {
-      // Unexpected: no error, but no data.id
       await db.emailAudit.update({
         where: { id: audit.id },
         data: {
@@ -188,22 +186,22 @@ async function sendWelcomeEmailAsync(
 
       logger.warn(
         { userId, email: userEmail },
-        '[EmailSend] ⚠️ Email send returned empty response'
+        '[VerificationEmail] ⚠️ No response from Resend'
       );
     }
   } catch (err) {
     logger.error(
       { userId, email: userEmail, error: err },
-      '[EmailSend] ❌ Unexpected error in email send'
+      '[VerificationEmail] ❌ Exception'
     );
 
-    // Try to mark audit as FAILED (best effort)
+    // Try to mark audit as FAILED
     try {
       const audit = await db.emailAudit.findFirst({
         where: {
           userId,
           email: userEmail,
-          template: 'welcome',
+          template: 'verification',
           status: 'PENDING',
         },
         orderBy: { createdAt: 'desc' },
@@ -219,10 +217,7 @@ async function sendWelcomeEmailAsync(
         });
       }
     } catch (updateErr) {
-      logger.error(
-        { error: updateErr },
-        '[EmailSend] Failed to update audit record (double failure)'
-      );
+      logger.error({ error: updateErr }, '[VerificationEmail] Audit update failed');
     }
   }
 }
