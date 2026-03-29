@@ -98,32 +98,8 @@ export async function POST(request: NextRequest) {
       'User registered'
     );
 
-    // Send welcome email (non-blocking, don't await)
-    console.log('[Register] Triggering email send for:', user.email);
-    const emailPromise = sendWelcomeEmail(user.email, user.name || undefined);
-    emailPromise
-      .then((id) => {
-        console.log('[Register] Email promise resolved with ID:', id);
-      })
-      .catch((err) => {
-        console.error('[Register] Email promise rejected:', err);
-        logger.error(
-          { userId: user.id, email: user.email, error: err },
-          'Failed to send welcome email'
-        );
-      });
-
-    // Log activity if this is an AI agent registration
-    if (role === USER_ROLES.AI_AGENT) {
-      // For AI agents, we'll need to create an AIAgent record in the next step
-      // For now, just log the registration
-      logger.info(
-        { userId: user.id, role: USER_ROLES.AI_AGENT },
-        'AI Agent registered'
-      );
-    }
-
-    return jsonResponse(
+    // Return success immediately
+    const response = jsonResponse(
       {
         id: user.id,
         email: user.email,
@@ -133,6 +109,32 @@ export async function POST(request: NextRequest) {
       201,
       'User registered successfully'
     );
+
+    // Send welcome email in background (don't block response)
+    // Use setTimeout to ensure it happens after response is sent
+    setTimeout(async () => {
+      try {
+        console.log('[BG] Sending email for:', user.email);
+        const emailId = await sendWelcomeEmail(user.email, user.name || undefined);
+        if (emailId) {
+          console.log('[BG] Email sent! ID:', emailId);
+        } else {
+          console.log('[BG] Email send returned null');
+        }
+      } catch (err) {
+        console.error('[BG] Email error:', err);
+      }
+    }, 0);
+
+    // Log activity if this is an AI agent registration
+    if (role === USER_ROLES.AI_AGENT) {
+      logger.info(
+        { userId: user.id, role: USER_ROLES.AI_AGENT },
+        'AI Agent registered'
+      );
+    }
+
+    return response;
   } catch (error) {
     logger.error({ error }, 'Registration error');
     return internalError();
