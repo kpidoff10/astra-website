@@ -2,7 +2,6 @@
 
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
-import { sendWelcomeEmail } from '@/lib/services/email';
 import { logger } from '@/lib/utils/logger';
 import { USER_ROLES, AUTH_ERRORS, VALIDATION } from '@/lib/constants';
 
@@ -72,15 +71,21 @@ export async function registerUser(formData: {
       'User registered via Server Action'
     );
 
-    // Send email in background (don't block response)
-    console.log('[SA] Queueing email send for:', email);
-    sendWelcomeEmail(user.email, user.name || undefined)
-      .then((id) => {
-        console.log('[SA] Email sent! ID:', id);
-      })
-      .catch((err) => {
-        console.error('[SA] Email failed:', err);
-      });
+    // Send email via dedicated API endpoint (60s timeout instead of 10s)
+    console.log('[SA] Queuing email to /api/emails/send');
+    const host = process.env.VERCEL_URL || 'localhost:3000';
+    const protocol = process.env.VERCEL_URL ? 'https' : 'http';
+    
+    fetch(`${protocol}://${host}/api/emails/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user.email,
+        name: user.name || undefined,
+      }),
+    }).catch((err) => {
+      console.error('[SA] Email API call error:', err);
+    });
 
     return {
       success: true,
