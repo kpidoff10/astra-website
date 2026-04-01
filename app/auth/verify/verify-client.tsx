@@ -60,15 +60,15 @@ export function VerifyEmailClient() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
             Vérifier votre email
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
             Un code a été envoyé à <br />
-            <span className="font-semibold text-gray-900 dark:text-white">{email}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{email}</span>
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export function VerifyEmailClient() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="code" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Code de vérification
               </label>
               <input
@@ -102,10 +102,10 @@ export function VerifyEmailClient() {
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="000000"
                 maxLength={6}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 text-center tracking-widest"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-gray-400 text-slate-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-slate-800 text-center tracking-widest"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Entrez le code 6 chiffres reçu par email
               </p>
             </div>
@@ -122,7 +122,7 @@ export function VerifyEmailClient() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Email incorrect?{' '}
               <Link
                 href="/auth/register"
