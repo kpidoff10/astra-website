@@ -7,19 +7,17 @@
     --color-primary: 59 130 246;
     --color-secondary: 124 58 252;
     --color-accent: 6 182 212;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   html {
     scroll-behavior: smooth;
   }
 
-  body {
-    @apply bg-white text-slate-900 transition-colors;
-  }
-
-  /* Dark mode support via class attribute (next-themes) */
-  /* next-themes handles system preference internally via enableSystem */
-  html.dark body {
-    @apply bg-slate-950 text-slate-50;
-  }
+  /* Body background and text are handled via Tailwind utility classes in layout.tsx
+     to avoid CSS specificity conflicts with dark: variants managed by next-themes */
 }

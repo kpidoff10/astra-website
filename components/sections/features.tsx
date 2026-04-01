@@ -38,7 +38,7 @@ export function FeaturesSection() {
           {features.map((feature) => (
             <div
               key={feature.key}
-              className="p-6 rounded-lg border border-slate-200 dark:border-slate-700 hover:shadow-lg dark:hover:shadow-slate-900 transition-shadow"
+              className="p-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-lg dark:hover:shadow-slate-900 transition-shadow"
             >
               <div className="text-4xl mb-4">{feature.icon}</div>
               <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
